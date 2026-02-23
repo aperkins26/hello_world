@@ -1,3 +1,90 @@
-<html>
-<font color = "blue"><h3>Hello, world!</h3>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Vibe Checker</title>
+    <style>
+        /* Modern Reset & Centering */
+        body {
+            margin: 0;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+            transition: background-color 0.6s ease; /* Smooth color transition */
+            background-color: #282c34;
+            color: white;
+            overflow: hidden;
+        }
+
+        /* Large Vibe Text */
+        #vibe-text {
+            font-size: clamp(3rem, 10vw, 6rem); /* Responsive font size */
+            font-weight: 800;
+            margin-bottom: 2rem;
+            text-transform: uppercase;
+            letter-spacing: -2px;
+            text-shadow: 2px 2px 10px rgba(0,0,0,0.2);
+        }
+
+        /* Modern Button Styling */
+        .vibe-button {
+            padding: 15px 40px;
+            font-size: 1.2rem;
+            font-weight: 600;
+            color: #222;
+            background-color: #fff;
+            border: none;
+            border-radius: 50px;
+            cursor: pointer;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+
+        .vibe-button:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 6px 20px rgba(0,0,0,0.3);
+        }
+
+        .vibe-button:active {
+            transform: translateY(1px);
+        }
+    </style>
+</head>
+<body>
+
+    <h1 id="vibe-text">Ready?</h1>
+    <button class="vibe-button" onclick="changeVibe()">Change the Vibe</button>
+
+    <script>
+        const phrases = [
+            "Chill Mode", 
+            "Party Time", 
+            "Focus On", 
+            "Retro Wave", 
+            "Deep Blues", 
+            "Golden Hour", 
+            "Cyberpunk", 
+            "Electric Soul"
+        ];
+
+        function changeVibe() {
+            // 1. Update the Text
+            const textElement = document.getElementById('vibe-text');
+            const randomPhrase = phrases[Math.floor(Math.random() * phrases.length)];
+            textElement.textContent = randomPhrase;
+
+            // 2. Generate Random Color
+            // We use HSL to keep the colors vibrant but not too dark/muddy
+            const randomHue = Math.floor(Math.random() * 360);
+            const newColor = `hsl(${randomHue}, 60%, 50%)`;
+            
+            // 3. Apply to Background
+            document.body.style.backgroundColor = newColor;
+        }
+    </script>
+</body>
 </html>
