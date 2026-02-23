@@ -3,87 +3,217 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Vibe Checker</title>
+    <title>The Vibe Vault</title>
     <style>
-        /* Modern Reset & Centering */
+        :root {
+            --bg-soft-pink: #fce4ec;
+            --bg-dark-pink: #f8bbd0;
+            --bg-soft-purple: #f3e5f5;
+            --bg-dark-purple: #e1bee7;
+            --bg-soft-yellow: #fff9c4;
+            --bg-dark-yellow: #fff59d;
+            --bg-soft-green: #e8f5e9;
+            --bg-dark-green: #c8e6c9;
+            --bg-soft-blue: #e3f2fd;
+            --bg-dark-blue: #bbdefb;
+        }
+
         body {
             margin: 0;
             height: 100vh;
             display: flex;
             flex-direction: column;
-            justify-content: center;
             align-items: center;
-            font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
-            transition: background-color 0.6s ease; /* Smooth color transition */
-            background-color: #282c34;
-            color: white;
+            justify-content: space-between;
+            font-family: 'Segoe UI', sans-serif;
             overflow: hidden;
+            transition: background 0.5s ease;
         }
 
-        /* Large Vibe Text */
-        #vibe-text {
-            font-size: clamp(3rem, 10vw, 6rem); /* Responsive font size */
-            font-weight: 800;
-            margin-bottom: 2rem;
-            text-transform: uppercase;
-            letter-spacing: -2px;
-            text-shadow: 2px 2px 10px rgba(0,0,0,0.2);
+        /* --- BACKGROUND PATTERNS --- */
+
+        /* 😋 Pink Horizontal Stripes */
+        .bg-stripes-h {
+            background-color: var(--bg-soft-pink);
+            background-image: linear-gradient(var(--bg-dark-pink) 50%, transparent 50%);
+            background-size: 100% 40px;
         }
 
-        /* Modern Button Styling */
-        .vibe-button {
-            padding: 15px 40px;
-            font-size: 1.2rem;
-            font-weight: 600;
-            color: #222;
-            background-color: #fff;
-            border: none;
-            border-radius: 50px;
+        /* ☺️ Purple Polka Dots */
+        .bg-polka {
+            background-color: var(--bg-soft-purple);
+            background-image: radial-gradient(var(--bg-dark-purple) 20%, transparent 20%),
+                              radial-gradient(var(--bg-dark-purple) 20%, transparent 20%);
+            background-size: 40px 40px;
+            background-position: 0 0, 20px 20px;
+        }
+
+        /* 😄 Yellow Gingham */
+        .bg-gingham {
+            background-color: var(--bg-soft-yellow);
+            background-image: linear-gradient(90deg, rgba(255,245,157,.5) 50%, transparent 50%),
+                              linear-gradient(rgba(255,245,157,.5) 50%, transparent 50%);
+            background-size: 50px 50px;
+        }
+
+        /* 🤨 Green Scales */
+        .bg-scales {
+            background: radial-gradient(circle at 100% 0%, var(--bg-soft-green) 50%, var(--bg-dark-green) 50%) 0 0 / 40px 40px,
+                        radial-gradient(circle at 0% 100%, var(--bg-soft-green) 50%, var(--bg-dark-green) 50%) 20px 20px / 40px 40px,
+                        var(--bg-soft-green);
+        }
+
+        /* ☹️ Blue Vertical Stripes */
+        .bg-stripes-v {
+            background-color: var(--bg-soft-blue);
+            background-image: linear-gradient(90deg, var(--bg-dark-blue) 50%, transparent 50%);
+            background-size: 40px 100%;
+        }
+
+        /* --- UI ELEMENTS --- */
+
+        #emoji-display {
+            flex-grow: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 12rem;
+            z-index: 10;
+            pointer-events: none;
+        }
+
+        .pop {
+            animation: bounce 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+
+        @keyframes bounce {
+            0% { transform: scale(0); }
+            100% { transform: scale(1); }
+        }
+
+        .button-container {
+            padding-bottom: 50px;
+            z-index: 20;
+        }
+
+        #press-btn {
+            padding: 20px 50px;
+            font-size: 1.5rem;
+            font-weight: bold;
+            color: #444;
+            background: white;
+            border: 2px solid rgba(0,0,0,0.1);
+            border-radius: 100px;
             cursor: pointer;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
-            transition: transform 0.2s, box-shadow 0.2s;
+            box-shadow: 0 8px 20px rgba(0,0,0,0.1);
+            transition: all 0.2s;
         }
 
-        .vibe-button:hover {
+        #press-btn:hover {
             transform: translateY(-3px);
-            box-shadow: 0 6px 20px rgba(0,0,0,0.3);
+            box-shadow: 0 12px 25px rgba(0,0,0,0.15);
         }
 
-        .vibe-button:active {
+        #press-btn:active {
             transform: translateY(1px);
+        }
+
+        /* Particle styling */
+        .particle {
+            position: absolute;
+            pointer-events: none;
+            z-index: 5;
+            user-select: none;
         }
     </style>
 </head>
-<body>
+<body class="bg-stripes-h"> <div id="emoji-display">😋</div>
 
-    <h1 id="vibe-text">Ready?</h1>
-    <button class="vibe-button" onclick="changeVibe()">Change the Vibe</button>
+    <div class="button-container">
+        <button id="press-btn">press me!</button>
+    </div>
 
     <script>
-        const phrases = [
-            "Chill Mode", 
-            "Party Time", 
-            "Focus On", 
-            "Retro Wave", 
-            "Deep Blues", 
-            "Golden Hour", 
-            "Cyberpunk", 
-            "Electric Soul"
+        const btn = document.getElementById('press-btn');
+        const display = document.getElementById('emoji-display');
+        
+        const vibes = [
+            { emoji: '😋', bg: 'bg-stripes-h', token: 'confetti' },
+            { emoji: '☺️', bg: 'bg-polka', token: '❤️' },
+            { emoji: '😄', bg: 'bg-gingham', token: '⭐' },
+            { emoji: '🤨', bg: 'bg-scales', token: '🪙' },
+            { emoji: '☹️', bg: 'bg-stripes-v', token: '💧' }
         ];
 
-        function changeVibe() {
-            // 1. Update the Text
-            const textElement = document.getElementById('vibe-text');
-            const randomPhrase = phrases[Math.floor(Math.random() * phrases.length)];
-            textElement.textContent = randomPhrase;
+        btn.addEventListener('click', (e) => {
+            const vibe = vibes[Math.floor(Math.random() * vibes.length)];
 
-            // 2. Generate Random Color
-            // We use HSL to keep the colors vibrant but not too dark/muddy
-            const randomHue = Math.floor(Math.random() * 360);
-            const newColor = `hsl(${randomHue}, 60%, 50%)`;
-            
-            // 3. Apply to Background
-            document.body.style.backgroundColor = newColor;
+            // Update UI
+            display.textContent = vibe.emoji;
+            document.body.className = vibe.bg;
+
+            // Trigger Animation reset
+            display.classList.remove('pop');
+            void display.offsetWidth; 
+            display.classList.add('pop');
+
+            // Spawn Particles
+            createParticles(vibe.token, e.clientX, e.clientY);
+        });
+
+        function createParticles(type, x, y) {
+            const count = 30;
+            const colors = ['#FF69B4', '#FFD700', '#87CEEB', '#98FB98', '#DDA0DD'];
+
+            for (let i = 0; i < count; i++) {
+                const p = document.createElement('div');
+                p.className = 'particle';
+                
+                // If confetti, make a colored square. Otherwise, use the emoji token.
+                if (type === 'confetti') {
+                    p.style.width = '12px';
+                    p.style.height = '12px';
+                    p.style.backgroundColor = colors[Math.floor(Math.random() * colors.length)];
+                } else {
+                    p.textContent = type;
+                    p.style.fontSize = '24px';
+                }
+
+                p.style.left = x + 'px';
+                p.style.top = y + 'px';
+                document.body.appendChild(p);
+
+                // Physics
+                const angle = Math.random() * Math.PI * 2;
+                const force = 4 + Math.random() * 10;
+                let vx = Math.cos(angle) * force;
+                let vy = Math.sin(angle) * force;
+                let rotation = 0;
+                const rotSpeed = (Math.random() - 0.5) * 10;
+                let opacity = 1;
+                let gravity = type === '💧' ? 0.6 : 0.25; // Rain falls faster
+
+                function update() {
+                    vx *= 0.98; // Air resistance
+                    vy += gravity;
+                    x += vx;
+                    y += vy;
+                    opacity -= 0.015;
+                    rotation += rotSpeed;
+
+                    p.style.transform = `translate(${vx}px, ${vy}px) rotate(${rotation}deg)`;
+                    p.style.left = x + 'px';
+                    p.style.top = y + 'px';
+                    p.style.opacity = opacity;
+
+                    if (opacity > 0) {
+                        requestAnimationFrame(update);
+                    } else {
+                        p.remove();
+                    }
+                }
+                requestAnimationFrame(update);
+            }
         }
     </script>
 </body>
