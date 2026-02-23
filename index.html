@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Crystal Runner: Energy Crisis</title>
+    <title>Crystal Runner: Grounded</title>
     <style>
         body, html {
             margin: 0;
@@ -17,10 +17,9 @@
 
         canvas {
             display: block;
-            background-color: #d3d3d3; /* Light Grey Cave */
+            background-color: #d3d3d3; 
         }
 
-        /* UI Overlays */
         #ui-layer {
             position: absolute;
             top: 0;
@@ -51,18 +50,12 @@
             z-index: 100;
         }
 
-        #game-over h1 {
-            color: #333;
-            margin-top: 0;
-        }
-
         #reason-text {
             color: #ff2400;
             font-weight: bold;
             margin-bottom: 20px;
         }
 
-        /* Energy Bar Container */
         .energy-container {
             position: absolute;
             bottom: 30px;
@@ -75,7 +68,6 @@
             overflow: hidden;
         }
 
-        /* Rainbow Gradient Bar */
         #energy-bar {
             width: 100%;
             height: 100%;
@@ -85,7 +77,6 @@
             transform-origin: left;
         }
 
-        /* Low Energy Alert Animation */
         .low-energy {
             animation: flicker 0.2s infinite;
         }
@@ -115,7 +106,7 @@
             color: white;
             border: none;
             border-radius: 50px;
-            transition: transform 0.2s, background 0.2s;
+            transition: all 0.2s;
         }
 
         #restart-btn:hover {
@@ -151,7 +142,6 @@
         const statusTitle = document.getElementById('status-title');
         const reasonText = document.getElementById('reason-text');
 
-        // Game Constants
         const GRAVITY = 0.6;
         const JUMP_FORCE = -14;
         const GROUND_Y_OFFSET = 100;
@@ -166,8 +156,8 @@
             dy: 0, jumping: false, groundY: 0
         };
 
-        let wallCrystals = [];
-        let obstacles = [];
+        let floorCrystals = []; // Small decorative ones
+        let obstacles = [];      // Big spiky ones
         let gems = [];
 
         function init() {
@@ -175,20 +165,21 @@
             canvas.height = window.innerHeight;
             player.groundY = canvas.height - GROUND_Y_OFFSET - player.height;
             player.y = player.groundY;
-            wallCrystals = [];
+            floorCrystals = [];
             obstacles = [];
             gems = [];
-            for(let i=0; i<15; i++) spawnWallCrystal(Math.random() * canvas.width);
+            // Pre-fill some crystals on the floor
+            for(let i=0; i<25; i++) spawnFloorCrystal(Math.random() * canvas.width);
         }
 
-        function spawnWallCrystal(xPos = canvas.width) {
-            const isTop = Math.random() > 0.5;
-            wallCrystals.push({
+        function spawnFloorCrystal(xPos = canvas.width) {
+            floorCrystals.push({
                 x: xPos,
-                y: isTop ? Math.random() * 100 : (canvas.height - GROUND_Y_OFFSET) - Math.random() * 50,
-                size: 5 + Math.random() * 15,
-                color: `hsl(${Math.random() * 360}, 60%, 80%)`,
-                speedMult: 0.7
+                // Anchored to the floor line
+                y: canvas.height - GROUND_Y_OFFSET,
+                size: 4 + Math.random() * 12,
+                color: `hsl(${Math.random() * 360}, 60%, 75%)`,
+                skew: (Math.random() - 0.5) * 10
             });
         }
 
@@ -196,7 +187,7 @@
             obstacles.push({
                 x: canvas.width,
                 width: 40 + Math.random() * 30,
-                height: 60 + Math.random() * 50,
+                height: 65 + Math.random() * 45,
                 color: '#4a32a8'
             });
         }
@@ -212,17 +203,11 @@
         function update() {
             if (gameState !== "playing") return;
 
-            // 1. Energy Drain Logic
-            energy -= 0.08; // Drains slightly faster now for challenge
+            energy -= 0.08; 
             
-            // Visual Warning
-            if (energy < 25) {
-                energyBar.classList.add('low-energy');
-            } else {
-                energyBar.classList.remove('low-energy');
-            }
+            if (energy < 25) energyBar.classList.add('low-energy');
+            else energyBar.classList.remove('low-energy');
 
-            // CRITICAL CHECK: Out of Energy
             if (energy <= 0) {
                 energy = 0;
                 endGame("OUT OF ENERGY!", "Your speed dropped too low and you hit a crystal!");
@@ -232,7 +217,6 @@
             energyBar.style.width = energy + "%";
             score += gameSpeed / 12;
 
-            // 2. Player Jump
             if (player.jumping) {
                 player.dy += GRAVITY;
                 player.y += player.dy;
@@ -242,17 +226,17 @@
                 }
             }
 
-            // 3. Move Elements
-            if (Math.random() < 0.04) spawnWallCrystal();
-            wallCrystals.forEach((c, i) => {
-                c.x -= gameSpeed * c.speedMult;
-                if (c.x < -50) wallCrystals.splice(i, 1);
+            // Move Decorative Floor Crystals
+            if (Math.random() < 0.1) spawnFloorCrystal();
+            floorCrystals.forEach((c, i) => {
+                c.x -= gameSpeed;
+                if (c.x < -50) floorCrystals.splice(i, 1);
             });
 
+            // Move Obstacles
             if (Math.random() < 0.01) spawnObstacle();
             obstacles.forEach((s, i) => {
                 s.x -= gameSpeed;
-                // Collision with Spikes
                 if (player.x < s.x + s.width && player.x + player.width > s.x &&
                     player.y + player.height > canvas.height - GROUND_Y_OFFSET - s.height) {
                     endGame("CRASH!", "You ran straight into a giant spike!");
@@ -260,6 +244,7 @@
                 if (s.x < -100) obstacles.splice(i, 1);
             });
 
+            // Move Gems
             if (Math.random() < 0.015) spawnGem();
             gems.forEach((g, i) => {
                 g.x -= gameSpeed;
@@ -267,7 +252,7 @@
                 let dy = (player.y + player.height/2) - g.y;
                 let dist = Math.sqrt(dx*dx + dy*dy);
                 if (dist < 40) {
-                    energy = Math.min(100, energy + 18); // Big boost
+                    energy = Math.min(100, energy + 20); 
                     gems.splice(i, 1);
                 }
                 if (g.x < -50) gems.splice(i, 1);
@@ -283,23 +268,31 @@
             ctx.fillStyle = "#aaa";
             ctx.fillRect(0, canvas.height - GROUND_Y_OFFSET, canvas.width, 4);
 
-            wallCrystals.forEach(c => {
+            // Draw Decorative Floor Crystals
+            floorCrystals.forEach(c => {
                 ctx.fillStyle = c.color;
                 ctx.beginPath();
                 ctx.moveTo(c.x, c.y);
-                ctx.lineTo(c.x + c.size, c.y - c.size);
+                ctx.lineTo(c.x + c.size, c.y - c.size * 1.5);
                 ctx.lineTo(c.x + c.size * 2, c.y);
-                ctx.lineTo(c.x + c.size, c.y + c.size);
                 ctx.fill();
+                // Add a little highlight
+                ctx.fillStyle = "rgba(255,255,255,0.3)";
+                ctx.fillRect(c.x + c.size/2, c.y - c.size, 2, 2);
             });
 
+            // Draw Gems
             gems.forEach(g => {
                 ctx.fillStyle = "#00f2ff";
+                ctx.shadowBlur = 15;
+                ctx.shadowColor = "#00f2ff";
                 ctx.beginPath();
                 ctx.arc(g.x, g.y, g.size, 0, Math.PI * 2);
                 ctx.fill();
+                ctx.shadowBlur = 0;
             });
 
+            // Draw Obstacles
             obstacles.forEach(s => {
                 ctx.fillStyle = s.color;
                 ctx.beginPath();
@@ -307,6 +300,9 @@
                 ctx.lineTo(s.x + s.width/2, canvas.height - GROUND_Y_OFFSET - s.height);
                 ctx.lineTo(s.x + s.width, canvas.height - GROUND_Y_OFFSET);
                 ctx.fill();
+                // Stroke for sharpness
+                ctx.strokeStyle = "rgba(255,255,255,0.2)";
+                ctx.stroke();
             });
 
             // Draw Player
@@ -315,9 +311,9 @@
             ctx.fillStyle = "white";
             ctx.fillRect(player.x + 25, player.y + 10, 8, 8);
 
-            // Score UI
+            // Distance UI
             ctx.fillStyle = "#333";
-            ctx.font = "bold 20px sans-serif";
+            ctx.font = "bold 22px sans-serif";
             ctx.fillText(`${Math.floor(score)}m`, 30, 50);
         }
 
